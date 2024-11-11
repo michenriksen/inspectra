@@ -1,8 +1,11 @@
 export enum AnalyzerId {
 	Base64Decoder,
+	GzipDecompressor,
 	HexDecoder,
 	JsonDecoder,
-	UrlDecoder
+	MessagePackDecoder,
+	UrlDecoder,
+	ZlibDecompressor
 }
 
 export interface Analysis {

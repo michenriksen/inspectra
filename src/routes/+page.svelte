@@ -3,11 +3,22 @@
 	import Base64Decoder from '$lib/analyzers/Base64Decoder';
 	import JsonDecoder from '$lib/analyzers/JsonDecoder';
 	import UrlDecoder from '$lib/analyzers/UrlDecoder';
+	import GzipDecompressor from '$lib/analyzers/GzipDecompressor';
+	import ZlibDecompressor from '$lib/analyzers/ZlibDecompressor';
 	import type { Analysis, Analyzer } from '$lib/types';
 	import AnalysisView from '$lib/components/AnalysisView.svelte';
 	import DataInput from '$lib/components/DataInput.svelte';
+	import MessagePackDecoder from '$lib/analyzers/MessagePackDecoder';
 
-	const analyzers: Analyzer[] = [new UrlDecoder(), new HexDecoder(), new Base64Decoder(), new JsonDecoder()];
+	const analyzers: Analyzer[] = [
+		new UrlDecoder(),
+		new HexDecoder(),
+		new Base64Decoder(),
+		new GzipDecompressor(),
+		new ZlibDecompressor(),
+		new MessagePackDecoder(),
+		new JsonDecoder()
+	];
 
 	let analysisSteps: Analysis[] = [];
 	let analyzed = false;

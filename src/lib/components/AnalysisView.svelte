@@ -20,9 +20,12 @@
 
 	const analyzerTitles: Record<AnalyzerId, string> = {
 		[AnalyzerId.Base64Decoder]: 'Base64 encoding',
+		[AnalyzerId.GzipDecompressor]: 'Gzip compression',
 		[AnalyzerId.HexDecoder]: 'Hex encoding',
 		[AnalyzerId.JsonDecoder]: 'JSON encoding',
-		[AnalyzerId.UrlDecoder]: 'URL encoding'
+		[AnalyzerId.MessagePackDecoder]: 'MessagePack encoding',
+		[AnalyzerId.UrlDecoder]: 'URL encoding',
+		[AnalyzerId.ZlibDecompressor]: 'Zlib compression'
 	};
 
 	let title = analyzerTitles[analysis.analyzer];
