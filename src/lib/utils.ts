@@ -127,6 +127,17 @@ export const uint8ArraysEqual = (a: Uint8Array, b: Uint8Array): boolean => {
 	return true;
 };
 
+export const splitUint8Array = (data: Uint8Array, chunkSize: number): Uint8Array[] => {
+	const result: Uint8Array[] = [];
+
+	for (let i = 0; i < data.length; i += chunkSize) {
+		const chunk = data.slice(i, i + chunkSize);
+		result.push(chunk);
+	}
+
+	return result;
+};
+
 export const sha256 = async (data: Uint8Array): Promise<string> => {
 	const hash = await window.crypto.subtle.digest('SHA-256', data.buffer);
 	return [...new Uint8Array(hash)].map((x) => x.toString(16).padStart(2, '0')).join('');
@@ -263,7 +274,7 @@ export const countNonPrintable = (data: Uint8Array): number => {
 	let count = 0;
 
 	for (const byte of data) {
-		if (byte !== 10 && ((byte >= 0 && byte <= 31) || byte > 127)) {
+		if (byte !== 10 && ((byte >= 0 && byte <= 31) || (byte >= 128 && byte <= 159))) {
 			count++;
 		}
 	}

@@ -5,8 +5,11 @@
 
 	export let onData: (data: Uint8Array) => void;
 
-	const demoData =
-		'N2IyMjY0NjU2ZDZmMjIzYTIyNzQ3Mjc1NjUyMjJjMjI2ZDY1NzM3MzYxNjc2NTIyM2EyMjQ4NjU2YzZjNmYyYzIwNTc2ZjcyNmM2NDIxMjI3ZA%3D%3D';
+	const demos: string[] = [
+		'H4sIALLwMmcA/wVAwQmAUAhdpd7ZCZygDTp/8PEviqB1inaXD8ZI6FMvBcHutQnFRfeU485yO/EPEbl9OCcAAAA=',
+		'gqRkZW1vw6dtZXNzYWdlrUhlbGxvLCBXb3JsZCE%3D',
+		'789c0540c1098050085da5ded9099ca00d3a7ff0f12f8aa0758a76970fc648e8532f05c1eeb509c545f794e3ce723bf10f0b110d18'
+	];
 
 	let inputEl: HTMLTextAreaElement;
 	let data = new Uint8Array();
@@ -15,7 +18,7 @@
 
 	function demo(event: MouseEvent) {
 		event.preventDefault();
-		inputEl.value = demoData;
+		inputEl.value = demos[Math.floor(Math.random() * demos.length)];
 		handleData();
 	}
 

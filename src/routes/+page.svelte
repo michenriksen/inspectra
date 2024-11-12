@@ -60,9 +60,9 @@
 	}
 </script>
 
-<DataInput onData={analyzeData} />
+<div class="flex flex-col space-y-5">
+	<DataInput onData={analyzeData} />
 
-<div class="mt-5 flex flex-col space-y-5">
 	{#if analyzed && analysisSteps.length === 0}
 		<div class="pb-6 text-center text-gray-500">
 			<h2 class="text-xl font-semibold">Nothing found.</h2>
@@ -71,8 +71,8 @@
 	{:else}
 		{#each analysisSteps as analysis, index (analysis.analyzer + analysis.hash!)}
 			{@const arrow = index !== analysisSteps.length - 1}
-			{@const expanded = index === analysisSteps.length - 1}
-			<AnalysisView {analysis} {index} {arrow} {expanded} />
+			{@const open = index === analysisSteps.length - 1}
+			<AnalysisView {analysis} {index} {arrow} {open} />
 		{/each}
 	{/if}
 </div>
