@@ -1,30 +1,26 @@
-import { AnalyzerId, type Analysis, type Analyzer } from '$lib/types';
-import { sha256 } from '$lib/utils';
+import Analysis from './Analysis';
+import BaseAnalyzer from './BaseAnalyzer';
+import { type Analyzer } from '$lib/types';
 import { unzlibSync } from 'fflate';
 
-export default class ZlibDecompressor implements Analyzer {
-	public readonly id = AnalyzerId.ZlibDecompressor;
+export default class ZlibDecompressor extends BaseAnalyzer implements Analyzer {
+	public readonly name = 'Zlib Decompressor';
+	public readonly handles = 'Zlib compression';
+	public readonly description =
+		'Decompresses <a href="https://en.wikipedia.org/wiki/Zlib" target="_blank">Zlib</a> compressed data.';
 
 	public async analyze(data: Uint8Array): Promise<Analysis> {
-		const analysis: Analysis = {
-			analyzer: this.id,
-			success: false,
-			data: data,
-			result: null,
-			hash: null
-		};
+		const analysis = new Analysis(this.name, data);
 
-		if (data[0] !== 0x78 || data[1] !== 0x9c) {
+		analysis.match = data.length > 2 && data[0] === 0x78 && data[1] === 0x9c;
+		if (!analysis.match) {
 			return analysis;
 		}
 
 		try {
-			analysis.result = unzlibSync(data);
-			analysis.hash = await sha256(analysis.result);
-			analysis.success = true;
+			analysis.success(unzlibSync(data));
 		} catch (error) {
-			analysis.error = error instanceof Error ? error.message : String(error);
-			analysis.success = false;
+			analysis.fail(error);
 		}
 
 		return analysis;

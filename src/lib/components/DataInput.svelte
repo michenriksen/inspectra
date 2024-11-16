@@ -1,9 +1,10 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import DataStats from '$lib/components/DataStats.svelte';
+	import { type Data } from '$lib/types';
 	import { debounce, stringToUint8Array } from '$lib/utils';
 
-	export let onData: (data: Uint8Array) => void;
+	export let onData: (data: Data) => void;
 
 	const demos: string[] = [
 		'H4sIALLwMmcA/wVAwQmAUAhdpd7ZCZygDTp/8PEviqB1inaXD8ZI6FMvBcHutQnFRfeU485yO/EPEbl9OCcAAAA=',
@@ -12,9 +13,10 @@
 	];
 
 	let inputEl: HTMLTextAreaElement;
-	let data = new Uint8Array();
+	let inputElValue = new Uint8Array();
+	let data: Data | null = null;
 
-	$: classes = data && data.length > 0 ? 'arrow-card-down' : '';
+	$: classes = data && data.data.length > 0 ? 'arrow-card-down' : '';
 
 	function demo(event: MouseEvent) {
 		event.preventDefault();
@@ -23,16 +25,31 @@
 	}
 
 	function handleData() {
+		const value = inputEl.value.trim();
 		const start = inputEl.selectionStart;
 		const end = inputEl.selectionEnd;
 
+		inputElValue = stringToUint8Array(value);
+
+		let dataArray;
+
 		if (start === end) {
-			data = stringToUint8Array(inputEl.value.trim());
+			dataArray = stringToUint8Array(value);
 		} else {
-			data = stringToUint8Array(inputEl.value.substring(start, end).trim());
+			dataArray = stringToUint8Array(value.substring(start, end).trim());
 		}
 
-		onData(data);
+		const newData = {
+			data: dataArray,
+			selection: start !== end,
+			offsetStart: start,
+			offsetEnd: end
+		};
+
+		if (JSON.stringify(data) !== JSON.stringify(newData)) {
+			data = newData;
+			onData(data);
+		}
 	}
 
 	const debouncedHandleData = debounce(handleData, 300);
@@ -64,6 +81,6 @@
 		></textarea>
 	</Card.Content>
 	<Card.Footer>
-		<DataStats {data} />
+		<DataStats data={inputElValue} />
 	</Card.Footer>
 </Card.Root>

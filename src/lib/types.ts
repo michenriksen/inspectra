@@ -1,23 +1,24 @@
-export enum AnalyzerId {
-	Base64Decoder,
-	GzipDecompressor,
-	HexDecoder,
-	JsonDecoder,
-	MessagePackDecoder,
-	UrlDecoder,
-	ZlibDecompressor
+export interface Data {
+	data: Uint8Array;
+	selection: boolean;
+	offsetStart: number;
+	offsetEnd: number;
 }
 
 export interface Analysis {
-	analyzer: AnalyzerId;
-	success: boolean;
+	id: string;
+	analyzer: string;
+	match: boolean;
 	data: Uint8Array;
 	result: Uint8Array | null;
 	hash: string | null;
-	error?: string;
+	error: string | null;
+	toJSON(): any;
 }
 
 export interface Analyzer {
-	id: AnalyzerId;
+	name: string;
+	handles: string;
+	description: string;
 	analyze(data: Uint8Array): Promise<Analysis>;
 }

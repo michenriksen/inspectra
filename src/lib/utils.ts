@@ -3,6 +3,10 @@ import { twMerge } from 'tailwind-merge';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 
+// Constants for FNV-1a 64-bit.
+const FNV_OFFSET_BASIS = BigInt('0xcbf29ce484222325');
+const FNV_PRIME = BigInt('0x100000001b3');
+
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
@@ -140,7 +144,31 @@ export const splitUint8Array = (data: Uint8Array, chunkSize: number): Uint8Array
 
 export const sha256 = async (data: Uint8Array): Promise<string> => {
 	const hash = await window.crypto.subtle.digest('SHA-256', data.buffer);
-	return [...new Uint8Array(hash)].map((x) => x.toString(16).padStart(2, '0')).join('');
+	const uint8Array = new Uint8Array(hash);
+
+	let binary = '';
+	uint8Array.forEach((byte) => {
+		binary += String.fromCharCode(byte);
+	});
+
+	return btoa(binary);
+};
+
+export const fnv1a64 = (values: unknown[]): string => {
+	const byteArray = values
+		.map((value) => JSON.stringify(value))
+		.join('|')
+		.split('')
+		.map((char) => char.charCodeAt(0));
+
+	let hash = FNV_OFFSET_BASIS;
+	for (const byte of byteArray) {
+		hash ^= BigInt(byte);
+		hash *= FNV_PRIME;
+		hash &= BigInt('0xFFFFFFFFFFFFFFFF');
+	}
+
+	return hash.toString(16).padStart(16, '0');
 };
 
 export const isBase64 = (data: Uint8Array): boolean => {

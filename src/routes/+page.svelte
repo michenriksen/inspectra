@@ -5,10 +5,11 @@
 	import UrlDecoder from '$lib/analyzers/UrlDecoder';
 	import GzipDecompressor from '$lib/analyzers/GzipDecompressor';
 	import ZlibDecompressor from '$lib/analyzers/ZlibDecompressor';
-	import type { Analysis, Analyzer } from '$lib/types';
+	import type { Analysis as IAnalysis, Analyzer, Data } from '$lib/types';
 	import AnalysisView from '$lib/components/AnalysisView.svelte';
 	import DataInput from '$lib/components/DataInput.svelte';
 	import MessagePackDecoder from '$lib/analyzers/MessagePackDecoder';
+	import Analysis from '$lib/analyzers/Analysis';
 
 	const analyzers: Analyzer[] = [
 		new UrlDecoder(),
@@ -20,19 +21,25 @@
 		new JsonDecoder()
 	];
 
-	let analysisSteps: Analysis[] = [];
-	let analyzed = false;
+	let analysisSteps: IAnalysis[] = [];
+	let nothing = false;
 
-	async function analyzeData(data: Uint8Array) {
+	async function analyzeData(data: Data) {
 		analysisSteps = [];
 
-		if (data.length === 0) {
-			analyzed = false;
+		if (data.data.length === 0) {
 			return;
 		}
 
-		const steps: Analysis[] = [];
-		let result = data;
+		const steps: IAnalysis[] = [];
+
+		if (data.selection) {
+			const selectionAnalysis = new Analysis(`Selection (${data.offsetStart + 1}:${data.offsetEnd + 1})`, data.data);
+			selectionAnalysis.success(data.data);
+			steps.push(selectionAnalysis);
+		}
+
+		let result = data.data;
 
 		while (analysisSteps.length < 1000) {
 			let success = false;
@@ -40,13 +47,16 @@
 			for (const analyzer of analyzers) {
 				let analysis = await analyzer.analyze(result);
 
-				if (!analysis.success) {
+				if (!analysis.match) {
 					continue;
 				}
 
 				steps.push(analysis);
-				result = analysis.result!;
-				success = true;
+
+				if (analysis.result && !analysis.error) {
+					result = analysis.result;
+					success = true;
+				}
 
 				break;
 			}
@@ -56,6 +66,16 @@
 			}
 		}
 
+		console.groupCollapsed('Analysis steps');
+		console.table(steps.map((s) => s.toJSON()));
+		console.groupEnd();
+
+		if (steps.length === 0 || (steps.length === 1 && data.selection)) {
+			nothing = true;
+		} else {
+			nothing = false;
+		}
+
 		analysisSteps = steps;
 	}
 </script>
@@ -63,16 +83,16 @@
 <div class="flex flex-col space-y-5">
 	<DataInput onData={analyzeData} />
 
-	{#if analyzed && analysisSteps.length === 0}
-		<div class="pb-6 text-center text-gray-500">
+	{#each analysisSteps as analysis, index (analysis.id)}
+		{@const arrow = index !== analysisSteps.length - 1}
+		{@const open = index === analysisSteps.length - 1}
+		<AnalysisView {analysis} {index} {arrow} {open} />
+	{/each}
+
+	{#if nothing}
+		<div class="pt-6 text-center text-gray-500">
 			<h2 class="text-xl font-semibold">Nothing found.</h2>
-			<p>Inspectra was unable to uncover anything from your current selection. Try selecting another part.</p>
+			<p>Inspectra was unable to uncover anything from the current input.</p>
 		</div>
-	{:else}
-		{#each analysisSteps as analysis, index (analysis.analyzer + analysis.hash!)}
-			{@const arrow = index !== analysisSteps.length - 1}
-			{@const open = index === analysisSteps.length - 1}
-			<AnalysisView {analysis} {index} {arrow} {open} />
-		{/each}
 	{/if}
 </div>

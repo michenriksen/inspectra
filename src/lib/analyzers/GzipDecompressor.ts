@@ -1,30 +1,26 @@
-import { AnalyzerId, type Analysis, type Analyzer } from '$lib/types';
-import { sha256 } from '$lib/utils';
+import { type Analyzer } from '$lib/types';
+import BaseAnalyzer from '$lib/analyzers/BaseAnalyzer';
+import Analysis from '$lib/analyzers/Analysis';
 import { gunzipSync } from 'fflate';
 
-export default class GzipDecompressor implements Analyzer {
-	public readonly id = AnalyzerId.GzipDecompressor;
+export default class GzipDecompressor extends BaseAnalyzer implements Analyzer {
+	public readonly name = 'Gzip Decompressor';
+	public readonly handles = 'Gzip compression';
+	public readonly description =
+		'Decompresses <a href="https://en.wikipedia.org/wiki/Gzip" target="_blank">Gzip</a> compressed data.';
 
 	public async analyze(data: Uint8Array): Promise<Analysis> {
-		const analysis: Analysis = {
-			analyzer: this.id,
-			success: false,
-			data: data,
-			result: null,
-			hash: null
-		};
+		const analysis = new Analysis(this.name, data);
 
-		if (data[0] !== 0x1f || data[1] !== 0x8b) {
+		analysis.match = data.length > 2 && data[0] === 0x1f && data[1] === 0x8b;
+		if (!analysis.match) {
 			return analysis;
 		}
 
 		try {
-			analysis.result = gunzipSync(data);
-			analysis.hash = await sha256(analysis.result);
-			analysis.success = true;
+			await analysis.success(gunzipSync(data));
 		} catch (error) {
-			analysis.error = error instanceof Error ? error.message : String(error);
-			analysis.success = false;
+			analysis.fail(error);
 		}
 
 		return analysis;

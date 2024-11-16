@@ -1,21 +1,21 @@
+import BaseAnalyzer from './BaseAnalyzer';
+import Analysis from './Analysis';
+import { type Analyzer } from '$lib/types';
 import { decodeAsync } from '@msgpack/msgpack';
-import { AnalyzerId, type Analysis, type Analyzer } from '$lib/types';
-import { sha256, stringToUint8Array } from '$lib/utils';
+import { stringToUint8Array } from '$lib/utils';
 
-export default class MessagePackDecoder implements Analyzer {
-	public readonly id = AnalyzerId.MessagePackDecoder;
+export default class MessagePackDecoder extends BaseAnalyzer implements Analyzer {
+	public readonly name = 'MessagePack Decoder';
+	public readonly handles = 'MessagePack encoding';
+	public readonly description =
+		'Decodes and formats <a href="https://en.wikipedia.org/wiki/MessagePack" target="_blank">MessagePack</a> encoded data.';
 
 	public async analyze(data: Uint8Array): Promise<Analysis> {
-		const analysis: Analysis = {
-			analyzer: this.id,
-			success: false,
-			data: data,
-			result: null,
-			hash: null
-		};
+		const analysis = new Analysis(this.name, data);
 
 		try {
-			if (!this._isMessagePack(data)) {
+			analysis.match = this._isMessagePack(data);
+			if (!analysis.match) {
 				return analysis;
 			}
 
@@ -25,15 +25,21 @@ export default class MessagePackDecoder implements Analyzer {
 					controller.close();
 				}
 			});
-			const obj = await decodeAsync(stream);
+
+			let obj;
+
+			try {
+				obj = await decodeAsync(stream);
+			} catch (error) {
+				analysis.match = false;
+				return analysis;
+			}
+
 			const formatted = JSON.stringify(obj, null, 4);
 
-			analysis.result = stringToUint8Array(formatted);
-			analysis.hash = await sha256(analysis.result);
-			analysis.success = true;
+			await analysis.success(stringToUint8Array(formatted));
 		} catch (error) {
-			analysis.error = error instanceof Error ? error.message : String(error);
-			analysis.success = false;
+			analysis.fail(error);
 		}
 
 		return analysis;
