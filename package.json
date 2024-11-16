@@ -29,6 +29,7 @@
 		"eslint": "^9.7.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^2.36.0",
+		"fflate": "^0.8.2",
 		"globals": "^15.0.0",
 		"js-hex-editor": "^0.1.0",
 		"lucide-svelte": "^0.456.0",

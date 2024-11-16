@@ -1,5 +1,6 @@
 import { AnalyzerId, type Analysis, type Analyzer } from '$lib/types';
-import { stringToUint8Array, sha256 } from '$lib/utils';
+import { sha256 } from '$lib/utils';
+import { gunzipSync } from 'fflate';
 
 export default class GzipDecompressor implements Analyzer {
 	public readonly id = AnalyzerId.GzipDecompressor;
@@ -18,10 +19,7 @@ export default class GzipDecompressor implements Analyzer {
 		}
 
 		try {
-			const stream = new Response(data).body!;
-			const decompressed = await new Response(stream.pipeThrough(new DecompressionStream('gzip'))).text();
-
-			analysis.result = stringToUint8Array(decompressed);
+			analysis.result = gunzipSync(data);
 			analysis.hash = await sha256(analysis.result);
 			analysis.success = true;
 		} catch (error) {

@@ -1,5 +1,6 @@
 import { AnalyzerId, type Analysis, type Analyzer } from '$lib/types';
-import { stringToUint8Array, sha256 } from '$lib/utils';
+import { sha256 } from '$lib/utils';
+import { unzlibSync } from 'fflate';
 
 export default class ZlibDecompressor implements Analyzer {
 	public readonly id = AnalyzerId.ZlibDecompressor;
@@ -18,10 +19,7 @@ export default class ZlibDecompressor implements Analyzer {
 		}
 
 		try {
-			const stream = new Response(data).body!;
-			const decompressed = await new Response(stream.pipeThrough(new DecompressionStream('deflate'))).text();
-
-			analysis.result = stringToUint8Array(decompressed);
+			analysis.result = unzlibSync(data);
 			analysis.hash = await sha256(analysis.result);
 			analysis.success = true;
 		} catch (error) {
