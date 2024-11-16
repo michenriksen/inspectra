@@ -1,25 +1,9 @@
 <script lang="ts">
-	import HexDecoder from '$lib/analyzers/HexDecoder';
-	import Base64Decoder from '$lib/analyzers/Base64Decoder';
-	import JsonDecoder from '$lib/analyzers/JsonDecoder';
-	import UrlDecoder from '$lib/analyzers/UrlDecoder';
-	import GzipDecompressor from '$lib/analyzers/GzipDecompressor';
-	import ZlibDecompressor from '$lib/analyzers/ZlibDecompressor';
-	import type { Analysis as IAnalysis, Analyzer, Data } from '$lib/types';
+	import type { Analysis as IAnalysis, Data } from '$lib/types';
 	import AnalysisView from '$lib/components/AnalysisView.svelte';
 	import DataInput from '$lib/components/DataInput.svelte';
-	import MessagePackDecoder from '$lib/analyzers/MessagePackDecoder';
 	import Analysis from '$lib/analyzers/Analysis';
-
-	const analyzers: Analyzer[] = [
-		new UrlDecoder(),
-		new HexDecoder(),
-		new Base64Decoder(),
-		new GzipDecompressor(),
-		new ZlibDecompressor(),
-		new MessagePackDecoder(),
-		new JsonDecoder()
-	];
+	import { analyzers } from '$lib/stores';
 
 	let analysisSteps: IAnalysis[] = [];
 	let nothing = false;
@@ -44,7 +28,7 @@
 		while (analysisSteps.length < 1000) {
 			let success = false;
 
-			for (const analyzer of analyzers) {
+			for (const analyzer of $analyzers) {
 				let analysis = await analyzer.analyze(result);
 
 				if (!analysis.match) {
