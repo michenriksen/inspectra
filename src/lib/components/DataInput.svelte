@@ -9,7 +9,9 @@
 	const demos: string[] = [
 		'H4sIALLwMmcA/wVAwQmAUAhdpd7ZCZygDTp/8PEviqB1inaXD8ZI6FMvBcHutQnFRfeU485yO/EPEbl9OCcAAAA=',
 		'gqRkZW1vw6dtZXNzYWdlrUhlbGxvLCBXb3JsZCE%3D',
-		'789c0540c1098050085da5ded9099ca00d3a7ff0f12f8aa0758a76970fc648e8532f05c1eeb509c545f794e3ce723bf10f0b110d18'
+		'789c0540c1098050085da5ded9099ca00d3a7ff0f12f8aa0758a76970fc648e8532f05c1eeb509c545f794e3ce723bf10f0b110d18',
+		'eJwFQLEJACEMXEV7B3EDayGHzYUDs8HP8mDlFC4Wvt_gescRMRduB6lWhjatJsfIDDE',
+		'H4sIAIbCOWcA/z2OSw7EMAhDrzSNDVGWVOX+V6rdRLOoUnj+wMbgmotPViz82HoDI4qMysd7cbFgwnxqBthB6S9xaY6/8j5+aFcJaTVTefYd/T/v620yp7nySqyd5379+7P+ks9+37P7R3wZusc8dn8y7xdLzE8j0AAAAA=='
 	];
 
 	let inputEl: HTMLTextAreaElement;
@@ -20,7 +22,13 @@
 
 	function demo(event: MouseEvent) {
 		event.preventDefault();
-		inputEl.value = demos[Math.floor(Math.random() * demos.length)];
+		while (true) {
+			let demo = demos[Math.floor(Math.random() * demos.length)];
+			if (inputEl.value !== demo) {
+				inputEl.value = demo;
+				break;
+			}
+		}
 		handleData();
 	}
 
